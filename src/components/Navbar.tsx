@@ -467,16 +467,7 @@ const Navbar = ({
     code?: string;
   }
 
-  const DEFAULT_NAV_CATEGORIES: FlatCategory[] = [
-    { id: "sarees", name: "Sarees", parentId: null, showInNav: true },
-    { id: "drapes", name: "Drapes", parentId: null, showInNav: true },
-    { id: "churidar", name: "Churidar", parentId: null, showInNav: true },
-    { id: "necklaces", name: "Necklaces", parentId: null, showInNav: true },
-    { id: "earrings", name: "Earrings", parentId: null, showInNav: true },
-    { id: "new-arrivals", name: "New Arrivals", parentId: null, showInNav: true },
-  ];
-
-  const [categories, setCategories] = useState<FlatCategory[]>(DEFAULT_NAV_CATEGORIES);
+  const [categories, setCategories] = useState<FlatCategory[]>([]);
   const [isCategoriesDropdownOpen, setIsCategoriesDropdownOpen] = useState(false);
   const [mobileCategoriesExpanded, setMobileCategoriesExpanded] = useState(false);
   const [activeMegaCatId, setActiveMegaCatId] = useState<string | null>(null);
@@ -558,9 +549,11 @@ const Navbar = ({
             .get("/category/list")
             .then((listRes) => {
               const listRaw = listRes.data?.list || [];
-              if (listRaw.length > 0) setCategories(normalizeCats(listRaw));
+              setCategories(normalizeCats(listRaw));
             })
-            .catch(() => {});
+            .catch(() => {
+              setCategories([]);
+            });
         }
       })
       .catch(() => {
@@ -569,9 +562,11 @@ const Navbar = ({
           .get("/category/list")
           .then((listRes) => {
             const listRaw = listRes.data?.list || [];
-            if (listRaw.length > 0) setCategories(normalizeCats(listRaw));
+            setCategories(normalizeCats(listRaw));
           })
-          .catch(() => {});
+          .catch(() => {
+            setCategories([]);
+          });
       });
   }, []);
 
@@ -1465,78 +1460,84 @@ const Navbar = ({
               }}
             >
               <div className="w-full max-w-7xl mx-auto px-8 lg:px-12 py-8 max-h-[75vh] overflow-y-auto [scrollbar-width:thin]">
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-8 lg:gap-x-12 gap-y-8 items-start">
-                  {topLevelCategories.map((cat) => {
-                    const subcats = childrenOf(cat.id);
-                    return (
-                      <div key={cat.id} className="min-w-0 space-y-2.5">
-                        {/* Main Category Heading */}
-                        <Link
-                          to={`/categories/${cat.id}`}
-                          onClick={() => setIsCategoriesDropdownOpen(false)}
-                          className={`font-bold text-[13px] sm:text-[14px] hover:underline transition-all block truncate tracking-tight ${
-                            isDark ? "text-white" : "text-gray-900"
-                          }`}
-                          style={customText ? { color: customText } : undefined}
-                          title={cat.name}
-                        >
-                          {cat.name}
-                        </Link>
+                {topLevelCategories.length === 0 ? (
+                  <div className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                    No categories found.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-8 lg:gap-x-12 gap-y-8 items-start">
+                    {topLevelCategories.map((cat) => {
+                      const subcats = childrenOf(cat.id);
+                      return (
+                        <div key={cat.id} className="min-w-0 space-y-2.5">
+                          {/* Main Category Heading */}
+                          <Link
+                            to={`/categories/${cat.id}`}
+                            onClick={() => setIsCategoriesDropdownOpen(false)}
+                            className={`font-bold text-[13px] sm:text-[14px] hover:underline transition-all block truncate tracking-tight ${
+                              isDark ? "text-white" : "text-gray-900"
+                            }`}
+                            style={customText ? { color: customText } : undefined}
+                            title={cat.name}
+                          >
+                            {cat.name}
+                          </Link>
 
-                        {/* Subcategories List */}
-                        {subcats.length > 0 && (
-                          <div className="space-y-2 text-[12px] sm:text-[13px]">
-                            {subcats.map((sub) => {
-                              const grandCats = childrenOf(sub.id);
-                              return (
-                                <div key={sub.id} className="space-y-1">
-                                  <Link
-                                    to={`/categories/${sub.id}`}
-                                    onClick={() => setIsCategoriesDropdownOpen(false)}
-                                    className={`hover:underline transition-colors block truncate font-normal ${
-                                      isDark
-                                        ? "text-white/80 hover:text-white"
-                                        : "text-gray-600 hover:text-black"
-                                    }`}
-                                    style={customText ? { color: customText, opacity: 0.85 } : undefined}
-                                    title={sub.name}
-                                  >
-                                    {sub.name}
-                                  </Link>
-                                  {grandCats.length > 0 && (
-                                    <div
-                                      className={`pl-2 space-y-1 border-l my-1 ${
-                                        isDark ? "border-white/15" : "border-gray-200"
+                          {/* Subcategories List */}
+                          {subcats.length > 0 && (
+                            <div className="space-y-2 text-[12px] sm:text-[13px]">
+                              {subcats.map((sub) => {
+                                const grandCats = childrenOf(sub.id);
+                                return (
+                                  <div key={sub.id} className="space-y-1">
+                                    <Link
+                                      to={`/categories/${sub.id}`}
+                                      onClick={() => setIsCategoriesDropdownOpen(false)}
+                                      className={`hover:underline transition-colors block truncate font-normal ${
+                                        isDark
+                                          ? "text-white/80 hover:text-white"
+                                          : "text-gray-600 hover:text-black"
                                       }`}
-                                      style={customText ? { borderColor: `${customText}33` } : undefined}
+                                      style={customText ? { color: customText, opacity: 0.85 } : undefined}
+                                      title={sub.name}
                                     >
-                                      {grandCats.map((grand) => (
-                                        <Link
-                                          key={grand.id}
-                                          to={`/categories/${grand.id}`}
-                                          onClick={() => setIsCategoriesDropdownOpen(false)}
-                                          className={`text-[11px] hover:underline transition-colors block truncate font-normal ${
-                                            isDark
-                                              ? "text-white/60 hover:text-white"
-                                              : "text-gray-500 hover:text-black"
-                                          }`}
-                                          style={customText ? { color: customText, opacity: 0.65 } : undefined}
-                                          title={grand.name}
-                                        >
-                                          {grand.name}
-                                        </Link>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                                      {sub.name}
+                                    </Link>
+                                    {grandCats.length > 0 && (
+                                      <div
+                                        className={`pl-2 space-y-1 border-l my-1 ${
+                                          isDark ? "border-white/15" : "border-gray-200"
+                                        }`}
+                                        style={customText ? { borderColor: `${customText}33` } : undefined}
+                                      >
+                                        {grandCats.map((grand) => (
+                                          <Link
+                                            key={grand.id}
+                                            to={`/categories/${grand.id}`}
+                                            onClick={() => setIsCategoriesDropdownOpen(false)}
+                                            className={`text-[11px] hover:underline transition-colors block truncate font-normal ${
+                                              isDark
+                                                ? "text-white/60 hover:text-white"
+                                                : "text-gray-500 hover:text-black"
+                                            }`}
+                                            style={customText ? { color: customText, opacity: 0.65 } : undefined}
+                                            title={grand.name}
+                                          >
+                                            {grand.name}
+                                          </Link>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -2164,35 +2165,39 @@ const Navbar = ({
 
                           {mobileCategoriesExpanded && (
                             <div className="pl-4 pr-2 py-1 space-y-1 mt-1 border-l-2 border-gray-200 dark:border-zinc-800 ml-5 max-h-[50vh] overflow-y-auto">
-                              {topLevelCategories.map((top) => {
-                                const subcats = childrenOf(top.id);
-                                return (
-                                  <div key={top.id} className="space-y-0.5">
-                                    <Link
-                                      to={`/categories/${top.id}`}
-                                      onClick={() => setMobileMenuOpen(false)}
-                                      className="flex items-center justify-between py-2 px-2.5 rounded-lg text-xs font-semibold text-gray-700 dark:text-zinc-300 hover:text-[var(--theme-primary)] hover:bg-gray-100 dark:hover:bg-zinc-800/60 transition-colors"
-                                    >
-                                      <span>{top.name}</span>
-                                      <ChevronRightIcon className="h-3.5 w-3.5 text-gray-400" />
-                                    </Link>
-                                    {subcats.length > 0 && (
-                                      <div className="pl-3 ml-2 border-l border-purple-200 dark:border-white/10 space-y-0.5 py-0.5">
-                                        {subcats.map((sub) => (
-                                          <Link
-                                            key={sub.id}
-                                            to={`/categories/${sub.id}`}
-                                            onClick={() => setMobileMenuOpen(false)}
-                                            className="block text-[11px] font-medium py-1 px-2 text-gray-500 dark:text-zinc-400 hover:text-[var(--theme-primary)]"
-                                          >
-                                            {sub.name}
-                                          </Link>
-                                        ))}
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              })}
+                              {topLevelCategories.length === 0 ? (
+                                <p className="py-2 px-2.5 text-xs text-gray-400">No categories found</p>
+                              ) : (
+                                topLevelCategories.map((top) => {
+                                  const subcats = childrenOf(top.id);
+                                  return (
+                                    <div key={top.id} className="space-y-0.5">
+                                      <Link
+                                        to={`/categories/${top.id}`}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="flex items-center justify-between py-2 px-2.5 rounded-lg text-xs font-semibold text-gray-700 dark:text-zinc-300 hover:text-[var(--theme-primary)] hover:bg-gray-100 dark:hover:bg-zinc-800/60 transition-colors"
+                                      >
+                                        <span>{top.name}</span>
+                                        <ChevronRightIcon className="h-3.5 w-3.5 text-gray-400" />
+                                      </Link>
+                                      {subcats.length > 0 && (
+                                        <div className="pl-3 ml-2 border-l border-purple-200 dark:border-white/10 space-y-0.5 py-0.5">
+                                          {subcats.map((sub) => (
+                                            <Link
+                                              key={sub.id}
+                                              to={`/categories/${sub.id}`}
+                                              onClick={() => setMobileMenuOpen(false)}
+                                              className="block text-[11px] font-medium py-1 px-2 text-gray-500 dark:text-zinc-400 hover:text-[var(--theme-primary)]"
+                                            >
+                                              {sub.name}
+                                            </Link>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })
+                              )}
                               <Link
                                 to="/categories"
                                 onClick={() => setMobileMenuOpen(false)}
