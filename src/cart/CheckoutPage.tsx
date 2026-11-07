@@ -230,7 +230,9 @@ const CheckoutPage = () => {
     calculateShippingForOnline: true,
     calculateShippingForQR: true,
   });
-  const [paymentMethod, setPaymentMethod] = useState("Online");
+  // Flag to hide Pay Online button without removing any underlying payment functionality
+  const SHOW_ONLINE_PAYMENT = false;
+  const [paymentMethod, setPaymentMethod] = useState(SHOW_ONLINE_PAYMENT ? "Online" : "POD");
   const [loading, setLoading] = useState(false);
   const [position, setPosition] = useState<[number, number] | null>(
     prefill?.addressPrefill?.lat && prefill?.addressPrefill?.lng
@@ -1544,38 +1546,50 @@ const CheckoutPage = () => {
                   <CreditCardIcon className="h-5 w-5" /> Payment Method
                 </h2>
 
-                <div className={`grid grid-cols-1 gap-4 ${qrConfig.enabled && (qrConfig.upiId || qrConfig.qrCode) ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
-                  <div
-                    onClick={() => setPaymentMethod("Online")}
-                    className={`relative cursor-pointer rounded-2xl border p-5 shadow-sm transition-all duration-200 ${
-                      paymentMethod === "Online"
-                        ? "border-[var(--theme-primary)] bg-[var(--theme-primary)] text-[var(--theme-primary-ink)] ring-2 ring-[var(--theme-primary)] ring-offset-2"
-                        : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-md"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-bold text-sm uppercase tracking-wide">
-                        Pay Online
-                      </span>
-                      <CreditCardIcon
-                        className={`h-6 w-6 ${
-                          paymentMethod === "Online" ? "text-gray-300" : "text-gray-400"
-                        }`}
-                      />
-                    </div>
-                    <p className={`text-xs ${paymentMethod === "Online" ? "text-gray-400" : "text-gray-500"}`}>
-                      Credit Card, UPI, Netbanking
-                    </p>
-                    {!shippingToggles.calculateShippingForOnline && (
-                      <div className="mt-2.5">
-                        <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          paymentMethod === "Online" ? "bg-white/20 text-white" : "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                        }`}>
-                          Free Shipping
+                <div
+                  className={`grid grid-cols-1 gap-4 ${
+                    SHOW_ONLINE_PAYMENT
+                      ? qrConfig.enabled && (qrConfig.upiId || qrConfig.qrCode)
+                        ? "sm:grid-cols-3"
+                        : "sm:grid-cols-2"
+                      : qrConfig.enabled && (qrConfig.upiId || qrConfig.qrCode)
+                        ? "sm:grid-cols-2"
+                        : "sm:grid-cols-1 max-w-md"
+                  }`}
+                >
+                  {SHOW_ONLINE_PAYMENT && (
+                    <div
+                      onClick={() => setPaymentMethod("Online")}
+                      className={`relative cursor-pointer rounded-2xl border p-5 shadow-sm transition-all duration-200 ${
+                        paymentMethod === "Online"
+                          ? "border-[var(--theme-primary)] bg-[var(--theme-primary)] text-[var(--theme-primary-ink)] ring-2 ring-[var(--theme-primary)] ring-offset-2"
+                          : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-md"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-bold text-sm uppercase tracking-wide">
+                          Pay Online
                         </span>
+                        <CreditCardIcon
+                          className={`h-6 w-6 ${
+                            paymentMethod === "Online" ? "text-gray-300" : "text-gray-400"
+                          }`}
+                        />
                       </div>
-                    )}
-                  </div>
+                      <p className={`text-xs ${paymentMethod === "Online" ? "text-gray-400" : "text-gray-500"}`}>
+                        Credit Card, UPI, Netbanking
+                      </p>
+                      {!shippingToggles.calculateShippingForOnline && (
+                        <div className="mt-2.5">
+                          <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            paymentMethod === "Online" ? "bg-white/20 text-white" : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          }`}>
+                            Free Shipping
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {qrConfig.enabled && (qrConfig.upiId || qrConfig.qrCode) && (
                     <div
